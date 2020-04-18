@@ -3,9 +3,9 @@
 Page Rank works with an input of an occurence adjacency list. First, convert the plain-text adjacency list representation into Hadoop Writable records:
 
 ```
-$ hadoop jar target/assignments-1.0.jar \
-   ca.uwaterloo.cs451.a4.BuildPersonalizedPageRankRecords \
-   -input data/p2p-Gnutella08-adj.txt -output cs451-bigdatateach-a4-Gnutella-PageRankRecords \
+$ hadoop jar target/pagerank.jar \
+   BuildPersonalizedPageRankRecords \
+   -input data/p2p-Gnutella08-adj.txt -output Gnutella-PageRankRecords \
    -numNodes 6301 -sources 367,249,145
 ```
 The -sources option specifies the source nodes for the personalized PageRank computations. You can expect the option value to be in the form of a comma-separated list, and that all node ids actually exist in the graph. The list of source nodes may be arbitrarily long, but for practical purposes we won't test your code with more than a few.
@@ -14,20 +14,20 @@ Since we're running three personalized PageRank computations in parallel, each P
 Next, partition the graph (hash partitioning) and get ready to iterate:
 
 ```
-$ hadoop fs -mkdir cs451-bigdatateach-a4-Gnutella-PageRank
+$ hadoop fs -mkdir Gnutella-PageRank
 
-$ hadoop jar target/assignments-1.0.jar \
-   ca.uwaterloo.cs451.a4.PartitionGraph \
-   -input cs451-bigdatateach-a4-Gnutella-PageRankRecords \
-   -output cs451-bigdatateach-a4-Gnutella-PageRank/iter0000 -numPartitions 5 -numNodes 6301
+$ hadoop jar target/pagerank.jar \
+   PartitionGraph \
+   -input Gnutella-PageRankRecords \
+   -output Gnutella-PageRank/iter0000 -numPartitions 5 -numNodes 6301
 ```
 
 After setting everything up, iterate multi-source personalized PageRank:
 
 ```
-$ hadoop jar target/assignments-1.0.jar \
-   ca.uwaterloo.cs451.a4.RunPersonalizedPageRankBasic \
-   -base cs451-bigdatateach-a4-Gnutella-PageRank -numNodes 6301 -start 0 -end 20 -sources 367,249,145
+$ hadoop jar target/pagerank.jar \
+   RunPersonalizedPageRankBasic \
+   -base Gnutella-PageRank -numNodes 6301 -start 0 -end 20 -sources 367,249,145
 ```
 
 Note that the sources are passed in from the command-line again. Here, we're running twenty iterations.
@@ -35,9 +35,9 @@ Note that the sources are passed in from the command-line again. Here, we're run
 Finally, run a program to extract the top ten personalized PageRank values, with respect to each source.
 
 ```
-$ hadoop jar target/assignments-1.0.jar \
-   ca.uwaterloo.cs451.a4.ExtractTopPersonalizedPageRankNodes \
-   -input cs451-bigdatateach-a4-Gnutella-PageRank/iter0020 -output cs451-bigdatateach-a4-Gnutella-PageRank-top10 \
+$ hadoop jar target/pagerank.jar \
+   ExtractTopPersonalizedPageRankNodes \
+   -input Gnutella-PageRank/iter0020 -output Gnutella-PageRank-top10 \
    -top 10 -sources 367,249,145
 ```
 
